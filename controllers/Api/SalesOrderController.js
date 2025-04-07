@@ -1,8 +1,6 @@
 
-const { conn, sequelize } = require('../../db/conn')
+const { conn, sequelize } = require('../../db/conn');
 const { Sequelize, Op, Model, DataTypes } = require("sequelize");
-
-
 
 
 exports.selectSalesOrderByFilter = async (req, res, next) =>
@@ -150,13 +148,12 @@ exports.pagination = async (req, res, next) =>
         console.log("the offset", offset, "the limit is ", req.query.limit);
         var result = await conn.sale_order.findAll({
             order: [["id", "DESC"]],
-            include: [],
+            include: [{model : conn.sale_order_details, as: 'sale_order_details', include: ['product']}],
             offset: offset,
             limit: req.query.limit,
             subQuery: false,
         })
-        console.log("the len is", result.length)
-    
+
             var count = await conn.sale_order.count();
             res.status(200).json({ status: true, data: result, tot: count })
         
