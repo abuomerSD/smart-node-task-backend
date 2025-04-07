@@ -1,0 +1,42 @@
+{
+  "name": "binya",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "dev": "NODE_ENV=production node server",
+    "start": "nodemon server.js",
+    "sequelize": "sequelize-auto -h localhost -d pos_demo -u root -x -p 3306 -o models"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "chai": "^4.3.7",
+    "chai-http": "^4.3.0",
+    "dotenv": "^16.0.1",
+    "exceljs": "^4.4.0",
+    "express": "^4.18.1",
+    "express-easy-fileuploader": "^1.0.2",
+    "fast-xml-parser": "^4.3.6",
+    "geoip-lite": "^1.4.6",
+    "jsonwebtoken": "^9.0.2",
+    "locnode": "^1.0.2",
+    "locnode-updated": "^1.0.4",
+    "mocha": "^10.1.0",
+    "mysql2": "^2.3.3",
+    "nodemailer": "^6.9.7",
+    "nodemon": "^2.0.19",
+    "request": "^2.88.2",
+    "require-context": "^1.1.0",
+    "sequelize": "^6.21.3",
+    "sequelize-auto": "^0.8.8",
+    "socket.io": "^4.7.2",
+    "sqlite-cipher-updated": "^0.3.6",
+    "sqlite-sync-updated": "^0.4.0",
+    "tokens-creator": "^1.1.0",
+    "which-browser": "^0.7.0"
+  }
+}

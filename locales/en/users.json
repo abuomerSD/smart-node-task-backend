@@ -1,0 +1,20 @@
+{
+   "success": {
+      "insert": " data created successfully",
+      "display": "data fetched successfully",
+      "update": "data updated successfully",
+      "pass_update": "Password Updated successfully"
+   },
+   "exceptions": {
+      "insert_error": "The data  you provided is not completed",
+      "delete_error": "filed to delete data, please try again",
+      "update_error": "updated failed please try again",
+      "wrong_pass": "Wrong Username or Password Please Login Again",
+      "wrong_pass_confirm": "Password And Password Confirmation Is Different, Please Try Again",
+      "pass_update_wrong": "your Old Password Does Not Match, Please Try Again",
+      "pass_min_length": "Your Password Should At least 8 characters long, Please Try Again",
+      "subscription_failed": "Point of Sales Hub Is Not Active",
+      "display_error": "filed to display data , please try again",
+      "msg_error": "Something went wrong , please try again"
+   }
+}

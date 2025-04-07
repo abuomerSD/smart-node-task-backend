@@ -1,0 +1,18 @@
+{
+   "success": {
+      "insert": " data created successfully",
+      "display": "data fetched successfully",
+      "update": "data updated successfully",
+            "delete": "data deleted successfully"
+   },
+   "exceptions": {
+      "insert_error": "The data  you provided is not completed",
+      "delete_error": "failed to delete data, please try again",
+      "update_error": "updated field please try again",
+      "display_error": "failed to display data , please try again",
+      "product_is_not_register": "Product Is not Registered",
+      "msg_error": "Something went wrong , please try again",
+      "not_found": "No Data Founded",
+      "delete_error_sales": "Failed to Delete, because there are sale orders for this product"
+   }
+}

@@ -1,0 +1,15 @@
+{
+   "success": {
+      "insert": " data created successfully",
+      "display": "data fetched successfully",
+      "update": "data updated successfully"
+   },
+   "exceptions": {
+      "insert_error": "البيانات التي قدمتها غير مكتملة",
+      "delete_error": "فشل في حذف البيانات، يرجى المحاولة مرة أخرى",
+      "update_error": "فشل التحديث، يرجى المحاولة مرة أخرى",
+      "display_error": "فشل عرض البيانات، يرجى المحاولة مرة أخرى",
+      "msg_error": "مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى",
+      "delete_error_products": "فشل في الحذف, لأن هذه الفئة تحتوي على منتجات"
+   }
+}
