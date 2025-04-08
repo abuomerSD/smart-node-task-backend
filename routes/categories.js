@@ -1,5 +1,4 @@
-
-const express = require('express')
+const express = require('express');
 const router = express.Router();
 const { getCategories, getCategoriesById, createCategories,
     updateCategories, deleteCategories,pagination,search} =require('../controllers/Api/CategoriesController.js')

@@ -16,11 +16,12 @@ const file_upload = require("./middleware/media_middleware");
 
 
 const users = require("./routes/Users");
-
 const user_roles = require("./routes/UserRoles");
-const categories =require('./routes/categories.js');
-const products = require('./routes/products.js');
-const salesOrder = require('./routes/salesOrder.js');
+const categories =require('./routes/Categories.js');
+const products = require('./routes/Products.js');
+const salesOrder = require('./routes/SalesOrder.js');
+const salesCreditNotes = require('./routes/SalesCreditNotes.js');
+const { logger } = require("./middleware/logger.js");
 
 // charts APIs routes file
 
@@ -31,6 +32,8 @@ const { conn, sequelize } = require("./db/conn");
 const utils = require("./utils/utils.js");
 // const authenticate = require('./middleware/authenticate.js')
 app.use(bodyParser.json());
+// logger
+app.use(logger);
 // app.use(authenticate)
 app.use(cors());
 app.use(
@@ -55,6 +58,8 @@ app.use("/api/users", users);
 app.use('/api/categories', categories);
 app.use('/api/products', products);
 app.use('/api/sales-order', salesOrder);
+app.use('/api/sales-credit-notes', salesCreditNotes);
+
 
 
 // charts APIs

@@ -2,13 +2,14 @@
 const { conn, sequelize } = require('../../db/conn');
 const { Sequelize, Op, Model, DataTypes } = require("sequelize");
 
-exports.selectSalesOrderByFilter = async (req, res, next) =>
+
+exports.selectSalesOrderDetailsByFilter = async (req, res, next) =>
 {
     var params = {
         limit: 10, page: 1, constrains: { name: "" },
 
     }
-    const result = await filter.filter("SalesOrder", params)
+    const result = await filter.filter("SalesOrderDetails", params)
     if (result)
     {
         res.status(200).json({ status: true, data: result, })
@@ -92,7 +93,7 @@ exports.search = async (req, res, next) =>
 //@decs   Get All 
 //@route  GET
 //@access Public
-exports.getSalesOrder = async (req, res, next) =>
+exports.getSalesOrderDetails = async (req, res, next) =>
 {
     try
     {
@@ -108,26 +109,24 @@ exports.getSalesOrder = async (req, res, next) =>
 
 
 }
-exports.createSalesOrder = async (req, res, next) =>
+exports.createSalesOrderDetails = async (req, res, next) =>
 {
     try
     {
         let file_path = '';
-        if (req.file)
-        {
-            file_path = await req.file.save('./public/uploads')
-            req.body.recipet_img = file_path.split('uploads/')[1]
+        if(req.file){
+           file_path= await req.file.save('./public/uploads')
+           req.body.recipet_img = file_path.split('uploads/')[1]
         }
 
-        const result = await conn.sale_order.create(req.body);
-        const order_details = JSON.parse(req.body.order_details);
+        const result = await conn.sale_order.create(req.body)
+        const order_details = req.body.order_details;
         console.log("body", req.body);
-
-        order_details.forEach(element =>
-        {
+        
+        order_details.forEach(element => {
             element.sale_order_id = result.id;
         });
-
+        
         await conn.sale_order_details.bulkCreate(order_details);
         result["order_details"] = order_details;
         res.status(200).json({ status: true, data: result });
@@ -149,15 +148,15 @@ exports.pagination = async (req, res, next) =>
         console.log("the offset", offset, "the limit is ", req.query.limit);
         var result = await conn.sale_order.findAll({
             order: [["id", "DESC"]],
-            include: [{ model: conn.sale_order_details, as: 'sale_order_details', include: ['product'] }],
+            include: [{model : conn.sale_order_details, as: 'sale_order_details', include: ['product']}],
             offset: offset,
             limit: req.query.limit,
             subQuery: false,
         })
 
-        var count = await conn.sale_order.count();
-        res.status(200).json({ status: true, data: result, tot: count })
-
+            var count = await conn.sale_order.count();
+            res.status(200).json({ status: true, data: result, tot: count })
+        
     }
     catch (e)
     {
@@ -168,25 +167,10 @@ exports.pagination = async (req, res, next) =>
 //@decs   Get All 
 //@route  GET
 //@access Public
-exports.getSalesOrderById = async (req, res, next) =>
+exports.getSalesOrderDetailsById = async (req, res, next) =>
 {
     try
     {
-        console.log('*'.repeat(50));
-        console.log('req.params', req.params);
-        const r = await sequelize.query(`
-            SELECT 
-                sale_order_details.id,
-                sale_order_details.product_id,
-                sale_order_details.price,
-                (sale_order_details.qty - sale_credit_note_details.qty) AS qty
-                FROM sale_order_details
-                JOIN sale_credit_note_details 
-                ON sale_order_details.id = sale_credit_note_details.sale_order_detail_id
-                    WHERE sale_credit_note_details.sale_credit_note_id = 
-                    (SELECT id FROM sale_credit_notes WHERE sale_credit_notes.sale_order_id = ${req.params.id})
-            `);
-        console.log('r', r);
         const result = await conn.sale_order.findOne({ where: { id: req.params.id } })
         if (result.length != 0)
             res.status(200).json({ status: true, data: result })
@@ -197,7 +181,6 @@ exports.getSalesOrderById = async (req, res, next) =>
     }
     catch (e)
     {
-        console.log(e);
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
     }
 
@@ -207,7 +190,7 @@ exports.getSalesOrderById = async (req, res, next) =>
 //@decs   Get All 
 //@route  Put
 //@access Public
-exports.updateSalesOrder = async (req, res, next) =>
+exports.updateSalesOrderDetails = async (req, res, next) =>
 {
     try
     {
@@ -231,7 +214,7 @@ exports.updateSalesOrder = async (req, res, next) =>
 //@decs   Get All 
 //@route  Delete
 //@access Public
-exports.deleteSalesOrder = async (req, res, next) =>
+exports.deleteSalesOrderDetails = async (req, res, next) =>
 {
     try
     {

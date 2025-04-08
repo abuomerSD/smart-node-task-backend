@@ -1,14 +1,15 @@
 
 const { conn, sequelize } = require('../../db/conn');
-const { Sequelize, Op, Model, DataTypes } = require("sequelize");
+const { Sequelize, Op, Model, DataTypes, json } = require("sequelize");
 
-exports.selectSalesOrderByFilter = async (req, res, next) =>
+
+exports.selectSalesOrderNotesByFilter = async (req, res, next) =>
 {
     var params = {
         limit: 10, page: 1, constrains: { name: "" },
 
     }
-    const result = await filter.filter("SalesOrder", params)
+    const result = await filter.filter("SalesOrderNotes", params)
     if (result)
     {
         res.status(200).json({ status: true, data: result, })
@@ -64,7 +65,7 @@ exports.search = async (req, res, next) =>
     var searchCol = req.body.col
     var offset = (req.body.page - 1) * req.body.limit
     var search = req.body.search
-    await conn.sale_order.findAll({
+    await conn.sale_credit_notes.findAll({
         limit: req.body.limit,
         offset: offset,
         include: [],
@@ -75,7 +76,7 @@ exports.search = async (req, res, next) =>
         }
     }).then(async function (assets)
     {
-        var count = await conn.sale_order.count({
+        var count = await conn.sale_credit_notes.count({
             where: {
                 name: {
                     [Op.like]: '%' + search + '%'
@@ -92,11 +93,11 @@ exports.search = async (req, res, next) =>
 //@decs   Get All 
 //@route  GET
 //@access Public
-exports.getSalesOrder = async (req, res, next) =>
+exports.getSalesOrderNotes = async (req, res, next) =>
 {
     try
     {
-        const result = await conn.sale_order.findAll()
+        const result = await conn.sale_credit_notes.findAll()
 
         res.status(200).json({ status: true, data: result })
 
@@ -108,29 +109,62 @@ exports.getSalesOrder = async (req, res, next) =>
 
 
 }
-exports.createSalesOrder = async (req, res, next) =>
+exports.createSalesOrderNotes = async (req, res, next) =>
 {
     try
     {
-        let file_path = '';
-        if (req.file)
+        console.log("------------------------------ \nthe body", req.body);
+        const sale_order = await conn.sale_order.findOne({
+            where: { id: req.body.sale_order_id },
+            include: [{ model: conn.sale_order_details, as: 'sale_order_details', include: ['product'] }]
+        });
+        // console.log('-'.repeat(50));
+        // console.log('the sale order', sale_order.sale_order_details);
+        let orderTotal = 0;
+        sale_order.sale_order_details.forEach(element =>
         {
-            file_path = await req.file.save('./public/uploads')
-            req.body.recipet_img = file_path.split('uploads/')[1]
-        }
-
-        const result = await conn.sale_order.create(req.body);
-        const order_details = JSON.parse(req.body.order_details);
-        console.log("body", req.body);
-
-        order_details.forEach(element =>
-        {
-            element.sale_order_id = result.id;
+            orderTotal += element.price * element.qty;
         });
 
-        await conn.sale_order_details.bulkCreate(order_details);
-        result["order_details"] = order_details;
-        res.status(200).json({ status: true, data: result });
+        // conditions
+        const isExist = await conn.sale_credit_notes.findOne({ where: { sale_order_id: req.body.sale_order_id } });
+
+        if (orderTotal === req.body.amount_returned && !isExist)
+        {
+            const result = await conn.sale_credit_notes.create(req.body)
+            let sale_credit_notes_details = req.body.sale_credit_note_details;
+            // console.log('-'.repeat(50))
+            // console.log(req.body.sale_credit_note_details)
+            // console.log('-'.repeat(50))
+
+            sale_credit_notes_details.forEach(element =>
+            {
+                element.sale_credit_note_id = result.id;
+            });
+
+            await conn.sale_credit_note_details.bulkCreate(sale_credit_notes_details);
+            result["sale_credit_notes_details"] = sale_credit_notes_details;
+            res.status(200).json({ status: true, data: result });
+        }
+        else if(orderTotal > req.body.amount_returned) {
+            const result = await conn.sale_credit_notes.create(req.body)
+            let sale_credit_notes_details = req.body.sale_credit_note_details;
+
+            sale_credit_notes_details.forEach(element =>
+            {
+                element.sale_credit_note_id = result.id;
+                element.qty = element.newQty;
+            });
+
+            await conn.sale_credit_note_details.bulkCreate(sale_credit_notes_details);
+            result["sale_credit_notes_details"] = sale_credit_notes_details;
+            res.status(200).json({ status: true, data: result });
+        }
+        else {
+            res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` });
+        }
+        
+
     }
     catch (e)
     {
@@ -147,15 +181,15 @@ exports.pagination = async (req, res, next) =>
     {
         var offset = (req.query.page - 1) * req.query.limit
         console.log("the offset", offset, "the limit is ", req.query.limit);
-        var result = await conn.sale_order.findAll({
+        var result = await conn.sale_credit_notes.findAll({
             order: [["id", "DESC"]],
-            include: [{ model: conn.sale_order_details, as: 'sale_order_details', include: ['product'] }],
+            include: [{ model: conn.sale_credit_note_details, as: 'sale_credit_note_details', include: ['product'] }],
             offset: offset,
             limit: req.query.limit,
             subQuery: false,
         })
 
-        var count = await conn.sale_order.count();
+        var count = await conn.sale_credit_notes.count();
         res.status(200).json({ status: true, data: result, tot: count })
 
     }
@@ -168,26 +202,11 @@ exports.pagination = async (req, res, next) =>
 //@decs   Get All 
 //@route  GET
 //@access Public
-exports.getSalesOrderById = async (req, res, next) =>
+exports.getSalesOrderNotesById = async (req, res, next) =>
 {
     try
     {
-        console.log('*'.repeat(50));
-        console.log('req.params', req.params);
-        const r = await sequelize.query(`
-            SELECT 
-                sale_order_details.id,
-                sale_order_details.product_id,
-                sale_order_details.price,
-                (sale_order_details.qty - sale_credit_note_details.qty) AS qty
-                FROM sale_order_details
-                JOIN sale_credit_note_details 
-                ON sale_order_details.id = sale_credit_note_details.sale_order_detail_id
-                    WHERE sale_credit_note_details.sale_credit_note_id = 
-                    (SELECT id FROM sale_credit_notes WHERE sale_credit_notes.sale_order_id = ${req.params.id})
-            `);
-        console.log('r', r);
-        const result = await conn.sale_order.findOne({ where: { id: req.params.id } })
+        const result = await conn.sale_credit_notes.findOne({ where: { id: req.params.id } })
         if (result.length != 0)
             res.status(200).json({ status: true, data: result })
         else
@@ -197,7 +216,6 @@ exports.getSalesOrderById = async (req, res, next) =>
     }
     catch (e)
     {
-        console.log(e);
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
     }
 
@@ -207,11 +225,11 @@ exports.getSalesOrderById = async (req, res, next) =>
 //@decs   Get All 
 //@route  Put
 //@access Public
-exports.updateSalesOrder = async (req, res, next) =>
+exports.updateSalesOrderNotes = async (req, res, next) =>
 {
     try
     {
-        const isUpdated = await conn.sale_order.update(req.body, { where: { id: req.params.id } })
+        const isUpdated = await conn.sale_credit_notes.update(req.body, { where: { id: req.params.id } })
         if (isUpdated)
             res.status(200).json({ status: true, data: req.body })
         else
@@ -231,11 +249,11 @@ exports.updateSalesOrder = async (req, res, next) =>
 //@decs   Get All 
 //@route  Delete
 //@access Public
-exports.deleteSalesOrder = async (req, res, next) =>
+exports.deleteSalesOrderNotes = async (req, res, next) =>
 {
     try
     {
-        const isDeleted = await conn.sale_order.destroy({ where: { id: req.params.id } })
+        const isDeleted = await conn.sale_credit_notes.destroy({ where: { id: req.params.id } })
         if (isDeleted)
             res.status(200).json({ status: true, msg: `data deleted successfully` })
         else
