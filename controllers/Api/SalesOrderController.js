@@ -147,16 +147,20 @@ exports.pagination = async (req, res, next) =>
     {
         var offset = (req.query.page - 1) * req.query.limit
         console.log("the offset", offset, "the limit is ", req.query.limit);
-        var result = await conn.sale_order.findAll({
-            order: [["id", "DESC"]],
-            include: [{ model: conn.sale_order_details, as: 'sale_order_details', include: ['product'] }],
-            offset: offset,
-            limit: req.query.limit,
-            subQuery: false,
-        })
+        // var result = await conn.sale_order.findAll({
+        //     order: [["id", "DESC"]],
+        //     include: [{ model: conn.sale_order_details, as: 'sale_order_details', include: ['product'] }],
+        //     offset: offset,
+        //     limit: req.query.limit,
+        //     subQuery: false,
+        // })
+
+        var result = await sequelize.query(`
+            SELECT *, (SELECT JSON_ARRAYAGG(JSON_Object('id', id, 'sale_order_id', sale_order_id, 'qty', sale_order_details.qty - (SELECT COALESCE(SUM(sale_credit_note_details.qty), 0) FROM sale_credit_note_details WHERE sale_credit_note_details.sale_order_detail_id = sale_order_details.id) , 'product_id', product_id, 'price', price , 'product', (SELECT json_object('name', name, 'img', img) FROM products WHERE products.id = product_id))) FROM sale_order_details WHERE sale_order_id = sale_order.id) AS sale_order_details FROM sale_order limit ${req.query.limit} OFFSET ${offset}
+            `)
 
         var count = await conn.sale_order.count();
-        res.status(200).json({ status: true, data: result, tot: count })
+        res.status(200).json({ status: true, data: result[0], tot: count })
 
     }
     catch (e)
@@ -172,21 +176,6 @@ exports.getSalesOrderById = async (req, res, next) =>
 {
     try
     {
-        console.log('*'.repeat(50));
-        console.log('req.params', req.params);
-        const r = await sequelize.query(`
-            SELECT 
-                sale_order_details.id,
-                sale_order_details.product_id,
-                sale_order_details.price,
-                (sale_order_details.qty - sale_credit_note_details.qty) AS qty
-                FROM sale_order_details
-                JOIN sale_credit_note_details 
-                ON sale_order_details.id = sale_credit_note_details.sale_order_detail_id
-                    WHERE sale_credit_note_details.sale_credit_note_id = 
-                    (SELECT id FROM sale_credit_notes WHERE sale_credit_notes.sale_order_id = ${req.params.id})
-            `);
-        console.log('r', r);
         const result = await conn.sale_order.findOne({ where: { id: req.params.id } })
         if (result.length != 0)
             res.status(200).json({ status: true, data: result })
@@ -200,8 +189,42 @@ exports.getSalesOrderById = async (req, res, next) =>
         console.log(e);
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
     }
+}
 
-
+//@decs   Get All 
+//@route  GET
+//@access Public
+exports.getSalesOrderDetailsByOrderId = async (req, res, next) =>
+{
+    try
+    {
+        console.log("the order id", req.params.id);
+        const result = await sequelize.query(`
+                SELECT 
+                    sale_order_details.id,
+                    sale_order_details.sale_order_id,
+                    (SELECT json_object('name',products.name, 'img', products.img) FROM products WHERE products.id = sale_order_details.product_id) AS product,
+                    sale_order_details.price,
+                    sale_order_details.qty - (SELECT COALESCE(SUM(sale_credit_note_details.qty), 0) FROM sale_credit_note_details WHERE sale_credit_note_details.sale_order_detail_id = sale_order_details.id) as qty
+                    FROM sale_order_details
+                    WHERE sale_order_details.sale_order_id =  ${req.params.id}
+                `);
+        console.log('query result', result);
+        let data = {
+            sale_order_details: result[0],
+        }
+        if (result.length != 0)
+            res.status(200).json({ status: true, data });
+        else
+        {
+            res.status(200).json({ status: false, msg: `No data founded` });
+        }
+    }
+    catch (e)
+    {
+        console.log(e);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
+    }
 }
 
 //@decs   Get All 

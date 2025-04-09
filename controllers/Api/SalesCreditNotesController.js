@@ -113,6 +113,7 @@ exports.createSalesOrderNotes = async (req, res, next) =>
 {
     try
     {
+        console.log('req.body', req.body);
         console.log("------------------------------ \nthe body", req.body);
         const sale_order = await conn.sale_order.findOne({
             where: { id: req.body.sale_order_id },
