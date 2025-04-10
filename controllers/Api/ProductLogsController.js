@@ -5,13 +5,13 @@ const fs = require('fs');
 
 
 
-exports.selectProductsByFilter = async (req, res, next) =>
+exports.selectProductLogsByFilter = async (req, res, next) =>
 {
     var params = {
         limit: 10, page: 1, constrains: { name: "" },
 
     }
-    const result = await filter.filter("Products", params)
+    const result = await filter.filter("ProductLogs", params)
     if (result)
     {
         res.status(200).json({ status: true, data: result, })
@@ -67,7 +67,7 @@ exports.search = async (req, res, next) =>
     var searchCol = req.body.col
     var offset = (req.body.page - 1) * req.body.limit
     var search = req.body.search
-    await conn.products.findAll({
+    await conn.product_logs.findAll({
         limit: req.body.limit,
         offset: offset,
         include: [],
@@ -78,7 +78,7 @@ exports.search = async (req, res, next) =>
         }
     }).then(async function (assets)
     {
-        var count = await conn.products.count({
+        var count = await conn.product_logs.count({
             where: {
                 name: {
                     [Op.like]: '%' + search + '%'
@@ -95,12 +95,12 @@ exports.search = async (req, res, next) =>
 //@decs   Get All 
 //@route  GET
 //@access Public
-exports.getProducts = async (req, res, next) =>
+exports.getProductLogs = async (req, res, next) =>
 {
     try
     {
-        const result = await conn.products.findAll()
-        console.log('get products');
+        const result = await conn.product_logs.findAll()
+        console.log('get ProductLogs');
         res.status(200).json({ status: true, data: result })
 
     }
@@ -111,7 +111,7 @@ exports.getProducts = async (req, res, next) =>
 
 
 }
-exports.createProducts = async (req, res, next) =>
+exports.createProductLogs = async (req, res, next) =>
 {
     try
     {
@@ -121,7 +121,7 @@ exports.createProducts = async (req, res, next) =>
         }
         req.body.img= file_path.split('uploads/')[1]
         console.log(req.body);
-        const result = await conn.products.create(req.body)
+        const result = await conn.product_logs.create(req.body)
 
         res.status(200).json({ status: true, data: result })
 
@@ -148,7 +148,7 @@ exports.pagination = async (req, res, next) =>
         }
         var offset = (req.query.page - 1) * req.query.limit
         console.log("the offset", offset, "the limit is ", req.query.limit);
-        var result = await conn.products.findAll({
+        var result = await conn.product_logs.findAll({
             order: [["id", "DESC"]],
             include: [],
             offset: offset,
@@ -158,7 +158,7 @@ exports.pagination = async (req, res, next) =>
         })
         console.log("the len is", result.length)
        
-            var count = await conn.products.count();
+            var count = await conn.product_logs.count();
             res.status(200).json({ status: true, data: result, tot: count })
         
     }
@@ -171,17 +171,19 @@ exports.pagination = async (req, res, next) =>
 //@decs   Get All 
 //@route  GET
 //@access Public
-exports.getProductsById = async (req, res, next) =>
+exports.getProductLogsByProductId = async (req, res, next) =>
 {
     try
     {
+        var offset = (req.query.page - 1) * req.query.limit
         console.log('id', req.params.id);
-        const result = await conn.products.findOne({ where: { id: req.params.id } })
-        if (result.length != 0)
-            res.status(200).json({ status: true, data: result })
+        const {count, rows} = await conn.product_logs.findAndCountAll({ where: { product_id: req.params.id },offset: offset,
+            limit: req.query.limit })
+        if (rows.length != 0)
+            res.status(200).json({ status: true, data: rows, tot: count });
         else
         {
-            res.status(200).json({ status: false, msg: `No data founded` })
+            res.status(200).json({ status: false, msg: `No data founded` });
         }
     }
     catch (e)
@@ -196,11 +198,11 @@ exports.getProductsById = async (req, res, next) =>
 //@decs   Get All 
 //@route  Put
 //@access Public
-exports.updateProducts = async (req, res, next) =>
+exports.updateProductLogs = async (req, res, next) =>
 {
     try
     {
-        const isUpdated = await conn.products.update(req.body, { where: { id: req.params.id } })
+        const isUpdated = await conn.product_logs.update(req.body, { where: { id: req.params.id } })
         console.log('product id:',req.params.id);
         if (isUpdated)
             res.status(200).json({ status: true, data: req.body })
@@ -219,9 +221,9 @@ exports.updateProducts = async (req, res, next) =>
 
 
 
-exports.updateProductsV2  = async (req, res, next) =>
+exports.updateProductLogsV2  = async (req, res, next) =>
     {
-        console.log('update products');
+        console.log('update ProductLogs');
         console.log("*".repeat(50));
         let newImagePath =''
         try
@@ -230,7 +232,7 @@ exports.updateProductsV2  = async (req, res, next) =>
             if(req.file) {
                 newImagePath = await req.file.save('./public/uploads/');
                 
-                const oldProduct = await conn.products.findOne({
+                const oldProduct = await conn.product_logs.findOne({
                     where: {
                         id: req.body.id,
                     }
@@ -246,7 +248,7 @@ exports.updateProductsV2  = async (req, res, next) =>
             if(newImagePath) {
                 req.body.img = newImagePath.split('uploads/')[1];
             }
-            await conn.products.update(req.body, { where: { id: req.body.id } })
+            await conn.product_logs.update(req.body, { where: { id: req.body.id } })
             console.log('product id:',req.params.product_id);
             res.status(200).json({ status: true, data: req.body })
             
@@ -268,11 +270,11 @@ exports.updateProductsV2  = async (req, res, next) =>
 //@decs   Get All 
 //@route  Delete
 //@access Public
-exports.deleteProducts = async (req, res, next) =>
+exports.deleteProductLogs = async (req, res, next) =>
 {
     try
     {
-        const oldProduct = await conn.products.findOne({
+        const oldProduct = await conn.product_logs.findOne({
             where: {
                 id: req.params.id,
             }
@@ -287,7 +289,7 @@ exports.deleteProducts = async (req, res, next) =>
                 console.log(error)
             }
         }
-        const isDeleted = await conn.products.destroy({ where: { id: req.params.id } })
+        const isDeleted = await conn.product_logs.destroy({ where: { id: req.params.id } })
         if (isDeleted)
             res.status(200).json({ status: true, msg: `data deleted successfully` })
         else
