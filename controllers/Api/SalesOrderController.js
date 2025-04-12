@@ -1,6 +1,7 @@
 
 const { conn, sequelize } = require('../../db/conn');
 const { Sequelize, Op, Model, DataTypes } = require("sequelize");
+const { response } = require('../../server');
 
 exports.selectSalesOrderByFilter = async (req, res, next) =>
 {
@@ -273,4 +274,40 @@ exports.deleteSalesOrder = async (req, res, next) =>
 
 }
 
+exports.getSalesDataOfLastWeek = async (req, res, next) => {
+    try {
+        const response = await sequelize.query(`
+                select DATE_FORMAT(selected_date,"%Y-%m-%d") label,(SELECT SUM(sale_order_details.qty * sale_order_details.price) FROM sale_order_details WHERE  date(sale_order_details.created) =selected_date GROUP BY DATE_FORMAT(sale_order_details.created,"%Y-%m-%d")) y from (select selected_date from (select adddate('1970-01-01',t4*10000 + t3*1000 + t2*100 + t1*10 + t0) selected_date from (select 0 t0 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t0, (select 0 t1 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t1, (select 0 t2 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t2, (select 0 t3 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t3, (select 0 t4 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t4) v where selected_date between date(date_sub(now(),INTERVAL 1 week)) and CURRENT_DATE()) tmp
+            `);
+            let options = {};
+            let series = response[0].map((item) => {
+                return {
+                    x: item.label,
+                    y: item.y
+                }
+            })
+            res.status(200).json({ status: true, data: { series } });
+    } catch (error) {
+        console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
+    }
+}
 
+exports.getSalesDataOfLastMonth = async (req, res, next) => {
+    try {
+        const response = await sequelize.query(`
+           select v label,(SELECT SUM(sale_order_details.qty * sale_order_details.price) FROM sale_order_details WHERE  DATE_FORMAT(sale_order_details.created,"%Y-%m") =v GROUP BY DATE_FORMAT(sale_order_details.created,"%Y-%m")) y  from(select DISTINCT DATE_FORMAT(selected_date,"%Y-%m") v from (select adddate('1970-01-01',t4*10000 + t3*1000 + t2*100 + t1*10 + t0) selected_date from (select 0 t0 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t0, (select 0 t1 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t1, (select 0 t2 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t2, (select 0 t3 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t3, (select 0 t4 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t4) v where DATE_FORMAT(selected_date,"%Y-%m") between DATE_FORMAT((date_sub(now(),interval 1 year)),"%Y-%m") and DATE_FORMAT(now(),"%Y-%m")) tmp2
+        `);
+        let options = {};
+        let series = response[0].map((item) => {
+            return {
+                x: item.label,
+                y: item.y
+            }
+        })
+        res.status(200).json({ status: true, data: { series } });
+    } catch (error) {
+        console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
+    }
+}
