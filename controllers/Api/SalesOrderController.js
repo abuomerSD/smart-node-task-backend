@@ -348,3 +348,51 @@ exports.getSalesDataOfLastMonthByProductId = async (req, res, next) =>
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
     }
 }
+
+exports.getBestSellingProductsLastDay = async (req, res, next) => {
+    try {
+        const data = await sequelize.query(`
+                SELECT p.name AS product_name,p.img AS img, s.product_id, SUM(s.qty) AS total_sold FROM sale_order_details s JOIN products p ON s.product_id = p.id WHERE s.created >= NOW() - INTERVAL 1 DAY GROUP BY s.product_id, p.name ORDER BY total_sold DESC LIMIT 10
+            `);
+        res.status(200).json({ status: true, data: data[0] });
+    } catch (error) {
+        console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
+    }
+}
+
+exports.getBestSellingProductsLastWeek = async (req, res, next) => {
+    try {
+        const data = await sequelize.query(`
+            SELECT p.name AS product_name,p.img AS img, s.product_id, SUM(s.qty) AS total_sold FROM sale_order_details s JOIN products p ON s.product_id = p.id WHERE s.created >= NOW() - INTERVAL 1 WEEK GROUP BY s.product_id, p.name ORDER BY total_sold DESC LIMIT 10
+        `);
+    res.status(200).json({ status: true, data: data[0] });
+    } catch (error) {
+        console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
+    }
+}
+
+exports.getBestSellingProductsLastMonth = async (req, res, next) => {
+    try {
+        const data = await sequelize.query(`
+            SELECT p.name AS product_name,p.img AS img, s.product_id, SUM(s.qty) AS total_sold FROM sale_order_details s JOIN products p ON s.product_id = p.id WHERE s.created >= NOW() - INTERVAL 1 MONTH GROUP BY s.product_id, p.name ORDER BY total_sold DESC LIMIT 10
+        `);
+    res.status(200).json({ status: true, data: data[0] });
+    } catch (error) {
+        console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
+    }
+}
+
+exports.getBestSellingProductsLastYear = async (req, res, next) => {
+    try {
+        const data = await sequelize.query(`
+            SELECT p.name AS product_name,p.img AS img, s.product_id, SUM(s.qty) AS total_sold FROM sale_order_details s JOIN products p ON s.product_id = p.id WHERE s.created >= NOW() - INTERVAL 1 YEAR GROUP BY s.product_id, p.name ORDER BY total_sold DESC LIMIT 10
+        `);
+    res.status(200).json({ status: true, data: data[0] });
+    } catch (error) {
+        console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
+    }
+}
