@@ -349,50 +349,86 @@ exports.getSalesDataOfLastMonthByProductId = async (req, res, next) =>
     }
 }
 
-exports.getBestSellingProductsLastDay = async (req, res, next) => {
-    try {
+exports.getBestSellingProductsLastDay = async (req, res, next) =>
+{
+    try
+    {
         const data = await sequelize.query(`
                 SELECT p.name AS product_name,p.img AS img, s.product_id, SUM(s.qty) AS total_sold FROM sale_order_details s JOIN products p ON s.product_id = p.id WHERE s.created >= NOW() - INTERVAL 1 DAY GROUP BY s.product_id, p.name ORDER BY total_sold DESC LIMIT 10
             `);
         res.status(200).json({ status: true, data: data[0] });
-    } catch (error) {
+    } catch (error)
+    {
         console.log(error);
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
     }
 }
 
-exports.getBestSellingProductsLastWeek = async (req, res, next) => {
-    try {
+exports.getBestSellingProductsLastWeek = async (req, res, next) =>
+{
+    try
+    {
         const data = await sequelize.query(`
             SELECT p.name AS product_name,p.img AS img, s.product_id, SUM(s.qty) AS total_sold FROM sale_order_details s JOIN products p ON s.product_id = p.id WHERE s.created >= NOW() - INTERVAL 1 WEEK GROUP BY s.product_id, p.name ORDER BY total_sold DESC LIMIT 10
         `);
-    res.status(200).json({ status: true, data: data[0] });
-    } catch (error) {
+        res.status(200).json({ status: true, data: data[0] });
+    } catch (error)
+    {
         console.log(error);
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
     }
 }
 
-exports.getBestSellingProductsLastMonth = async (req, res, next) => {
-    try {
+exports.getBestSellingProductsLastMonth = async (req, res, next) =>
+{
+    try
+    {
         const data = await sequelize.query(`
             SELECT p.name AS product_name,p.img AS img, s.product_id, SUM(s.qty) AS total_sold FROM sale_order_details s JOIN products p ON s.product_id = p.id WHERE s.created >= NOW() - INTERVAL 1 MONTH GROUP BY s.product_id, p.name ORDER BY total_sold DESC LIMIT 10
         `);
-    res.status(200).json({ status: true, data: data[0] });
-    } catch (error) {
+        res.status(200).json({ status: true, data: data[0] });
+    } catch (error)
+    {
         console.log(error);
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
     }
 }
 
-exports.getBestSellingProductsLastYear = async (req, res, next) => {
-    try {
+exports.getBestSellingProductsLastYear = async (req, res, next) =>
+{
+    try
+    {
         const data = await sequelize.query(`
             SELECT p.name AS product_name,p.img AS img, s.product_id, SUM(s.qty) AS total_sold FROM sale_order_details s JOIN products p ON s.product_id = p.id WHERE s.created >= NOW() - INTERVAL 1 YEAR GROUP BY s.product_id, p.name ORDER BY total_sold DESC LIMIT 10
         `);
-    res.status(200).json({ status: true, data: data[0] });
-    } catch (error) {
+        res.status(200).json({ status: true, data: data[0] });
+    } catch (error)
+    {
         console.log(error);
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
     }
 }
+
+exports.getSalesDataOfLastWeekByProductId = async (req, res, next) =>
+{
+    try
+    {
+        const id = req.params.product_id;
+        const data = await sequelize.query(`
+                select DATE_FORMAT(selected_date,"%Y-%m-%d") label,(SELECT sum(sale_order_details.qty) FROM sale_order_details WHERE  sale_order_details.product_id = ${id} AND date(sale_order_details.created) =selected_date GROUP BY DATE_FORMAT(sale_order_details.created,"%Y-%m-%d")) y from (select selected_date from (select adddate('1970-01-01',t4*10000 + t3*1000 + t2*100 + t1*10 + t0) selected_date from (select 0 t0 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t0, (select 0 t1 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t1, (select 0 t2 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t2, (select 0 t3 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t3, (select 0 t4 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t4) v where selected_date between date(date_sub(now(),INTERVAL 1 week)) and CURRENT_DATE()) tmp
+            `);
+            let series = data[0].map((item) =>
+            {
+                return {
+                    x: item.label,
+                    y: item.y
+                }
+            })
+            console.log(series);
+            res.status(200).json({ status: true, data: { series } });
+    } catch (error)
+    {
+        console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
+    }
+} 
