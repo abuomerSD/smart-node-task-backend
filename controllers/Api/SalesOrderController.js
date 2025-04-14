@@ -417,24 +417,26 @@ exports.getSalesDataOfLastWeekByProductId = async (req, res, next) =>
         const data = await sequelize.query(`
                 select DATE_FORMAT(selected_date,"%Y-%m-%d") label,(SELECT sum(sale_order_details.qty) FROM sale_order_details WHERE  sale_order_details.product_id = ${id} AND date(sale_order_details.created) =selected_date GROUP BY DATE_FORMAT(sale_order_details.created,"%Y-%m-%d")) y from (select selected_date from (select adddate('1970-01-01',t4*10000 + t3*1000 + t2*100 + t1*10 + t0) selected_date from (select 0 t0 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t0, (select 0 t1 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t1, (select 0 t2 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t2, (select 0 t3 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t3, (select 0 t4 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t4) v where selected_date between date(date_sub(now(),INTERVAL 1 week)) and CURRENT_DATE()) tmp
             `);
-            let series = data[0].map((item) =>
-            {
-                return {
-                    x: item.label,
-                    y: item.y
-                }
-            })
-            console.log(series);
-            res.status(200).json({ status: true, data: { series } });
+        let series = data[0].map((item) =>
+        {
+            return {
+                x: item.label,
+                y: item.y
+            }
+        })
+        console.log(series);
+        res.status(200).json({ status: true, data: { series } });
     } catch (error)
     {
         console.log(error);
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
     }
-} 
+}
 
-exports.compareProductSales = async (req, res, next) => {
-    try {
+exports.compareProductSales2 = async (req, res, next) =>
+{
+    try
+    {
         const product_id = req.body.product_id;
         const from = req.body.from;
         const to = req.body.to;
@@ -443,8 +445,6 @@ exports.compareProductSales = async (req, res, next) => {
         console.log('to date', to)
         const response = await sequelize.query(`
             select DATE_FORMAT(selected_date,"%Y-%m-%d") label,(SELECT SUM(sale_order_details.qty) FROM sale_order_details WHERE  date(sale_order_details.created) =selected_date AND sale_order_details.product_id = ${product_id} GROUP BY DATE_FORMAT(sale_order_details.created,"%Y-%m-%d")) y from (select selected_date from (select adddate('1970-01-01',t4*10000 + t3*1000 + t2*100 + t1*10 + t0) selected_date from (select 0 t0 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t0, (select 0 t1 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t1, (select 0 t2 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t2, (select 0 t3 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t3, (select 0 t4 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t4) v where selected_date between date('${from}') AND date('${to}')) tmp
-
-
         `);
 
 
@@ -458,7 +458,93 @@ exports.compareProductSales = async (req, res, next) => {
         })
         console.log('series', series);
         res.status(200).json({ status: true, data: { series } });
-    } catch (error) {
+    } catch (error)
+    {
+        console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
+    }
+}
+
+exports.compareProductSales = async (req, res, next) =>
+{
+    try
+    {
+        const productIds = req.body.productIds;
+        const product_id = req.body.product_id;
+        const from = req.body.from;
+        const to = req.body.to;
+
+        const dateRange = {
+            startDate: from,
+            endDate: to
+        };
+        console.log('productIds', productIds)
+        console.log('from date', from)
+        console.log('to date', to)
+
+        // 1. First get product names
+        const products = await conn.products.findAll({
+            attributes: ['id', 'name'],
+            where: { id: productIds },
+            raw: true
+        });
+
+        // 2. Generate date range subquery
+        const dateSubquery = `
+        SELECT adddate('1970-01-01', t4*10000 + t3*1000 + t2*100 + t1*10 + t0) AS selected_date 
+        FROM 
+            (SELECT 0 t0 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t0,
+            (SELECT 0 t1 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t1,
+            (SELECT 0 t2 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t2,
+            (SELECT 0 t3 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t3,
+            (SELECT 0 t4 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t4
+        WHERE 
+            adddate('1970-01-01', t4*10000 + t3*1000 + t2*100 + t1*10 + t0) 
+            BETWEEN :startDate AND :endDate
+        `;
+
+        // 3. Build the main query for each product
+        const result = [];
+
+        for (const product of products)
+        {
+            const query = `
+                SELECT 
+                    DATE_FORMAT(d.selected_date, "%Y-%m-%d") AS label,
+                    :productId AS product_id,
+                    :productName AS name,
+                    IFNULL((
+                    SELECT SUM(sod.qty)
+                    FROM sale_order_details sod
+                    WHERE DATE(sod.created) = d.selected_date
+                    AND sod.product_id = :productId
+                    ), 0) AS y
+                FROM (${dateSubquery}) d
+                ORDER BY label
+                `;
+
+            const salesData = await sequelize.query(query, {
+                replacements: {
+                    startDate: dateRange.startDate,
+                    endDate: dateRange.endDate,
+                    productId: product.id,
+                    productName: product.name
+                },
+                type: sequelize.QueryTypes.SELECT
+            });
+            console.log('salesData', salesData)
+            result.push( {
+                name: product.name,
+                data: salesData.map(row =>  ({
+                    label: row.label,
+                    y: row.y
+                }))
+            });
+        }
+        res.status(200).json({status: true, data: result});
+
+    } catch (error)
+    {
         console.log(error);
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
     }
