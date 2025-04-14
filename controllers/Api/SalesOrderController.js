@@ -432,3 +432,34 @@ exports.getSalesDataOfLastWeekByProductId = async (req, res, next) =>
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
     }
 } 
+
+exports.compareProductSales = async (req, res, next) => {
+    try {
+        const product_id = req.body.product_id;
+        const from = req.body.from;
+        const to = req.body.to;
+        console.log('product_id', product_id)
+        console.log('from date', from)
+        console.log('to date', to)
+        const response = await sequelize.query(`
+            select DATE_FORMAT(selected_date,"%Y-%m-%d") label,(SELECT SUM(sale_order_details.qty) FROM sale_order_details WHERE  date(sale_order_details.created) =selected_date AND sale_order_details.product_id = ${product_id} GROUP BY DATE_FORMAT(sale_order_details.created,"%Y-%m-%d")) y from (select selected_date from (select adddate('1970-01-01',t4*10000 + t3*1000 + t2*100 + t1*10 + t0) selected_date from (select 0 t0 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t0, (select 0 t1 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t1, (select 0 t2 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t2, (select 0 t3 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t3, (select 0 t4 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t4) v where selected_date between date('${from}') AND date('${to}')) tmp
+
+
+        `);
+
+
+        let options = {};
+        let series = response[0].map((item) =>
+        {
+            return {
+                x: item.label,
+                y: item.y
+            }
+        })
+        console.log('series', series);
+        res.status(200).json({ status: true, data: { series } });
+    } catch (error) {
+        console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
+    }
+}

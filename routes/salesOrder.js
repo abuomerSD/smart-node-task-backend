@@ -8,7 +8,8 @@ const { getSalesOrder, getSalesOrderById, createSalesOrder,
     getBestSellingProductsLastWeek,
     getBestSellingProductsLastMonth,
     getBestSellingProductsLastYear,
-    getSalesDataOfLastWeekByProductId} =require('../controllers/Api/SalesOrderController.js')
+    getSalesDataOfLastWeekByProductId,
+    compareProductSales} =require('../controllers/Api/SalesOrderController.js')
 
 router.route('/').get(getSalesOrder).post(createSalesOrder)
 router.route('/paginate').get(pagination)
@@ -21,6 +22,7 @@ router.route('/best-sellings-month').get(getBestSellingProductsLastMonth)
 router.route('/best-sellings-year').get(getBestSellingProductsLastYear)
 router.route('/sales-of-last-week-by-productid/:product_id').get(getSalesDataOfLastWeekByProductId)
 router.route('/sales-of-last-month-by-productid/:product_id').get(getSalesDataOfLastMonthByProductId)
+router.route('/product-sales-compare').post(compareProductSales)
 router.route('/:id').get(getSalesOrderById).put(updateSalesOrder).delete(deleteSalesOrder);
 router.route('/get-details/:id').get(getSalesOrderDetailsByOrderId);
 module.exports = router;
