@@ -1,17 +1,17 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('products', {
+  return sequelize.define('subledger_account_subaccounts', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    category_id: {
+    subledger_account_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
-        model: 'categories',
+        model: 'subledger_accounts',
         key: 'id'
       }
     },
@@ -19,29 +19,31 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    img: {
+    name_en: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    price: {
-      type: DataTypes.DECIMAL(10,2),
+    level_three_chart_of_account_id: {
+      type: DataTypes.INTEGER,
       allowNull: true,
-      defaultValue: 0.00
+      references: {
+        model: 'level_three_chart_of_accounts',
+        key: 'id'
+      }
     },
     created: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
       defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     },
     updated: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
       defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
     sequelize,
-    tableName: 'products',
-    hasTrigger: true,
+    tableName: 'subledger_account_subaccounts',
     timestamps: false,
     indexes: [
       {
@@ -53,10 +55,17 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "category_id",
+        name: "subledger_account_id",
         using: "BTREE",
         fields: [
-          { name: "category_id" },
+          { name: "subledger_account_id" },
+        ]
+      },
+      {
+        name: "level_three_chart_of_account_id",
+        using: "BTREE",
+        fields: [
+          { name: "level_three_chart_of_account_id" },
         ]
       },
     ]

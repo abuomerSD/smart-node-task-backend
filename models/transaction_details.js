@@ -1,37 +1,61 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('sale_order_details', {
+  return sequelize.define('transaction_details', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    sale_order_id: {
+    transaction_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'sale_order',
+        model: 'transactions',
         key: 'id'
       }
     },
-    product_id: {
+    currency_rate: {
+      type: DataTypes.DECIMAL(30,3),
+      allowNull: true
+    },
+    account_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'products',
+        model: 'level_three_chart_of_accounts',
         key: 'id'
       }
     },
-    qty: {
-      type: DataTypes.DECIMAL(10,0),
+    type: {
+      type: DataTypes.STRING(20),
+      allowNull: false
+    },
+    value: {
+      type: DataTypes.DECIMAL(30,3),
+      allowNull: true
+    },
+    value_in_other_currency: {
+      type: DataTypes.DECIMAL(30,3),
+      allowNull: true
+    },
+    transaction_type: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      defaultValue: "normal"
+    },
+    descr: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    descr_en: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    posted: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: 0
-    },
-    price: {
-      type: DataTypes.DECIMAL(10,2),
-      allowNull: false,
-      defaultValue: 0.00
     },
     created: {
       type: DataTypes.DATE,
@@ -45,7 +69,7 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     sequelize,
-    tableName: 'sale_order_details',
+    tableName: 'transaction_details',
     timestamps: false,
     indexes: [
       {
@@ -57,17 +81,17 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "product_id",
+        name: "mian_transation_details",
         using: "BTREE",
         fields: [
-          { name: "product_id" },
+          { name: "transaction_id" },
         ]
       },
       {
-        name: "sale_order_id",
+        name: "level_three_accont",
         using: "BTREE",
         fields: [
-          { name: "sale_order_id" },
+          { name: "account_id" },
         ]
       },
     ]

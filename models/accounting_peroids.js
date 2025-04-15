@@ -1,32 +1,24 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('products', {
+  return sequelize.define('accounting_peroids', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    category_id: {
-      type: DataTypes.INTEGER,
+    start_date: {
+      type: DataTypes.DATEONLY,
+      allowNull: false
+    },
+    end_date: {
+      type: DataTypes.DATEONLY,
+      allowNull: false
+    },
+    is_current: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
-      references: {
-        model: 'categories',
-        key: 'id'
-      }
-    },
-    name: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    img: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    price: {
-      type: DataTypes.DECIMAL(10,2),
-      allowNull: true,
-      defaultValue: 0.00
+      defaultValue: 1
     },
     created: {
       type: DataTypes.DATE,
@@ -40,8 +32,7 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     sequelize,
-    tableName: 'products',
-    hasTrigger: true,
+    tableName: 'accounting_peroids',
     timestamps: false,
     indexes: [
       {
@@ -50,13 +41,6 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "id" },
-        ]
-      },
-      {
-        name: "category_id",
-        using: "BTREE",
-        fields: [
-          { name: "category_id" },
         ]
       },
     ]

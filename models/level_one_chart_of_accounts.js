@@ -1,47 +1,50 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('products', {
+  return sequelize.define('level_one_chart_of_accounts', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    category_id: {
+    main_chart_of_accounts_type_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
-        model: 'categories',
+        model: 'main_chart_of_accounts_types',
         key: 'id'
       }
+    },
+    code: {
+      type: DataTypes.STRING(255),
+      allowNull: true
     },
     name: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    img: {
-      type: DataTypes.STRING(255),
+    name_en: {
+      type: DataTypes.STRING(200),
       allowNull: true
     },
-    price: {
-      type: DataTypes.DECIMAL(10,2),
+    is_editable: {
+      type: DataTypes.INTEGER,
       allowNull: true,
-      defaultValue: 0.00
+      defaultValue: 1
     },
     created: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
       defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     },
     updated: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
       defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
     sequelize,
-    tableName: 'products',
-    hasTrigger: true,
+    tableName: 'level_one_chart_of_accounts',
     timestamps: false,
     indexes: [
       {
@@ -53,10 +56,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "category_id",
+        name: "fk_level_one_chart_of_accounts_main_chart_of_accounts_types_1",
         using: "BTREE",
         fields: [
-          { name: "category_id" },
+          { name: "main_chart_of_accounts_type_id" },
         ]
       },
     ]

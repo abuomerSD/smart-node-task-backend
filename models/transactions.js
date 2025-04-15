@@ -1,47 +1,42 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('products', {
+  return sequelize.define('transactions', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    category_id: {
+    descr: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    descr_en: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    accounting_period_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
+      defaultValue: 0,
       references: {
-        model: 'categories',
+        model: 'accounting_peroids',
         key: 'id'
       }
     },
-    name: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    img: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    price: {
-      type: DataTypes.DECIMAL(10,2),
-      allowNull: true,
-      defaultValue: 0.00
-    },
     created: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
       defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     },
     updated: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
       defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
     sequelize,
-    tableName: 'products',
-    hasTrigger: true,
+    tableName: 'transactions',
     timestamps: false,
     indexes: [
       {
@@ -53,10 +48,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "category_id",
+        name: "accounting_period_id",
         using: "BTREE",
         fields: [
-          { name: "category_id" },
+          { name: "accounting_period_id" },
         ]
       },
     ]
