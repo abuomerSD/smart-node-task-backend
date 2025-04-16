@@ -22,6 +22,8 @@ const products = require('./routes/Products.js');
 const salesOrder = require('./routes/SalesOrder.js');
 const salesCreditNotes = require('./routes/SalesCreditNotes.js');
 const productLogs = require('./routes/ProductLogs.js');
+const transactions = require('./routes/Transactions.js');
+
 const { logger } = require("./middleware/logger.js");
 
 // charts APIs routes file
@@ -61,6 +63,7 @@ app.use('/api/products', products);
 app.use('/api/sales-order', salesOrder);
 app.use('/api/sales-credit-notes', salesCreditNotes);
 app.use('/api/product-logs', productLogs);
+app.use('/api/transactions', transactions);
 
 
 
