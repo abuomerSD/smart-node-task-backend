@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { getLevelThreeAccounts, createTransaction } =require('../controllers/Api/TransactionsController.js')
+const { getLevelThreeAccountsByName, createTransaction, paginateTransactions, search } =require('../controllers/Api/TransactionsController.js')
+
 router.route('/').post(createTransaction)
-router.route('/get-all-level3-accounts').get(getLevelThreeAccounts)
+router.route('/paginate').get(paginateTransactions)
+router.route('/search').post(search)
+router.route('/get-level3-account').get(getLevelThreeAccountsByName)
 
 module.exports = router;
