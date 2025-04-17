@@ -44,7 +44,9 @@ app.use(
     app,
     fileUploadOptions: {
       limits: { fileSize: 500 * 1024 * 1024 },
+      multiple: true,
     },
+    
   })
 );
 app.use(detector);
