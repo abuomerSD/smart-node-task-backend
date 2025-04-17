@@ -2,15 +2,15 @@
 const { conn, sequelize } = require('../../db/conn')
 const { Sequelize, Op, Model, DataTypes } = require("sequelize");
 
-exports.getLevelThreeAccounts = async(req, res) => {
-    try {
-        const accounts = await conn.level_three_chart_of_accounts.findAll();
-        res.status(200).json({ status: true, data: accounts });
-    } catch (error) {
-        console.log(error);
-        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
-    }
-}
+// exports.getLevelThreeAccounts = async(req, res) => {
+//     try {
+//         const accounts = await conn.level_three_chart_of_accounts.findAll();
+//         res.status(200).json({ status: true, data: accounts });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
+//     }
+// }
 
 exports.getLevelThreeAccountsByName = async (req, res) => {
     try
