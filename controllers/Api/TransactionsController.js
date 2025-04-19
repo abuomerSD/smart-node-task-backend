@@ -170,6 +170,7 @@ exports.getTransactionDetailsById = async(req, res) => {
                   td.type, 
                   td.value, 
                   td.descr_en,
+                  td.created,
                   l3.name_en AS account_name
                 FROM 
                   transaction_details td
