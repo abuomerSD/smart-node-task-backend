@@ -1,33 +1,29 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('sale_order', {
+  return sequelize.define('customers', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    user_id: {
+    customer_category_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'users',
+        model: 'customer_categories',
         key: 'id'
       }
     },
-    customer_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'customers',
-        key: 'id'
-      }
-    },
-    recipet_img: {
+    name: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    recipet_number: {
+    tel: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    email: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
@@ -43,7 +39,7 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     sequelize,
-    tableName: 'sale_order',
+    tableName: 'customers',
     timestamps: false,
     indexes: [
       {
@@ -55,17 +51,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "user_id",
+        name: "customer_category_id",
         using: "BTREE",
         fields: [
-          { name: "user_id" },
-        ]
-      },
-      {
-        name: "customer_id",
-        using: "BTREE",
-        fields: [
-          { name: "customer_id" },
+          { name: "customer_category_id" },
         ]
       },
     ]
