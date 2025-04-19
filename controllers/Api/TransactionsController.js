@@ -159,3 +159,40 @@ exports.search = async(req, res) => {
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
     }
 }
+
+exports.getTransactionDetailsById = async(req, res) => {
+    try 
+    {
+        const { id } = req.params;
+        const details = await sequelize.query(`
+            SELECT 
+                  td.account_id, 
+                  td.type, 
+                  td.value, 
+                  td.descr_en,
+                  l3.name_en AS account_name
+                FROM 
+                  transaction_details td
+                JOIN 
+                  level_three_chart_of_accounts l3
+                ON 
+                  td.account_id = l3.id
+                WHERE 
+                  td.transaction_id = ${id}
+                ORDER BY 
+                  CASE 
+                    WHEN td.type = 'debit' THEN 0
+                    WHEN td.type = 'credit' THEN 1
+                    ELSE 2
+                  END;
+        `);
+
+        res.status(200).json({ status: true, data: details[0] });
+    }
+    catch(error) 
+    {
+        console.error(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })
+
+    }
+}
