@@ -188,7 +188,14 @@ exports.getTransactionDetailsById = async(req, res) => {
                   END;
         `);
 
-        res.status(200).json({ status: true, data: details[0] });
+        const documents = await conn.transaction_documents.findAll( {
+            where: {
+                transaction_id : id
+            }
+        });
+
+
+        res.status(200).json({ status: true, data: {details: details[0], documents} });
     }
     catch(error) 
     {
