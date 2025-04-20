@@ -62,20 +62,59 @@ exports.createCashAccount = async(req, res) => {
 	}
 }
 
-exports.pagination = async (req, res) => {
+exports.paginationCashAccounts = async (req, res) => {
 	try
 	{
 		console.log('query', req.query)
         var offset = (req.query.page - 1) * req.query.limit
         console.log("the offset", offset, "the limit is ", req.query.limit);
         const result = await conn.cash_accounts.findAll({
+        						where: {
+							  	type: "cash"
+							  },
                               order: [['id', 'DESC']],
 							  offset: offset,
 							  limit: parseInt(req.query.limit),
-							  subQuery: false
+							  subQuery: false,
+							  
                             });
        
-        var count = await conn.customers.count();
+        var count = await conn.cash_accounts.count({
+        	where: {
+        		type: 'cash',
+        	}
+        });
+        res.status(200).json({ status: true, data: result, tot: count })
+	}
+	catch(error)
+	{
+		console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })    
+	} 
+}
+
+exports.paginationBankAccounts = async (req, res) => {
+	try
+	{
+		console.log('query', req.query)
+        var offset = (req.query.page - 1) * req.query.limit
+        console.log("the offset", offset, "the limit is ", req.query.limit);
+        const result = await conn.cash_accounts.findAll({
+        						where: {
+							  	type: 'bank'
+							  },
+                              order: [['id', 'DESC']],
+							  offset: offset,
+							  limit: parseInt(req.query.limit),
+							  subQuery: false,
+							  
+                            });
+
+        var count = await conn.cash_accounts.count({
+        	where: {
+        		type: 'bank',
+        	}
+        });
         res.status(200).json({ status: true, data: result, tot: count })
 	}
 	catch(error)
@@ -107,5 +146,39 @@ exports.updateCashAccount = async (req, res) => {
 	}
 }
 
+exports.deleteCashAccount = async (req, res) => {
+	try 
+	{
+		const id = req.params.lvl3AccountId;
+		// if cash account has operations dont delete
+		const transaction_details = await conn.transaction_details.findAll({
+			where: {
+				account_id : id,
+			}
+		});
+		if (transaction_details.length > 0) {
+			res.status(200).json({status: false, msg: 'لا يمكنك حذف حساب لديه حركة'});
+			return;
+		}
 
+
+		const cash_accounts_delete = await conn.cash_accounts.destroy({
+			where: {
+				level_three_chart_of_account_id: id,
+			}
+		})
+
+		const lvl3_account_delete = await conn.cash_accounts.destroy({
+			where: {
+				id
+			}
+		})
+
+		res.status(200).json({status: true});
+	}
+	catch(error) {
+		console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })    
+	}
+}
 
