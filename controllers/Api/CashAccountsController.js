@@ -84,3 +84,28 @@ exports.pagination = async (req, res) => {
         res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })    
 	} 
 }
+
+exports.updateCashAccount = async (req, res) => {
+	try
+	{
+		const account = req.body;
+		console.log('body ', req.body)
+		const cash_account_update = await sequelize.query(`
+			UPDATE cash_accounts SET name = '${account.name}', name_en= '${account.name_en}', account_number = ${account.account_number} WHERE level_three_chart_of_account_id = ${account.level_three_chart_of_account_id}
+		`)
+
+		const lvl3_account_update = await sequelize.query(`
+			UPDATE level_three_chart_of_accounts SET name = '${account.name}', name_en='${account.name_en}' WHERE id= ${account.level_three_chart_of_account_id}
+		`)
+
+		res.status(200).json({status: true, data: {cash_account_update, lvl3_account_update}})
+	}
+	catch(error) 
+	{
+		console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })    
+	}
+}
+
+
+
