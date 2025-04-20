@@ -65,26 +65,50 @@ exports.createCashAccount = async(req, res) => {
 exports.paginationCashAccounts = async (req, res) => {
 	try
 	{
-		console.log('query', req.query)
-        var offset = (req.query.page - 1) * req.query.limit
-        console.log("the offset", offset, "the limit is ", req.query.limit);
-        const result = await conn.cash_accounts.findAll({
-        						where: {
-							  	type: "cash"
-							  },
-                              order: [['id', 'DESC']],
-							  offset: offset,
-							  limit: parseInt(req.query.limit),
-							  subQuery: false,
-							  
-                            });
-       
-        var count = await conn.cash_accounts.count({
-        	where: {
-        		type: 'cash',
-        	}
-        });
-        res.status(200).json({ status: true, data: result, tot: count })
+		console.log('query', req.query);
+		const offset = (req.query.page - 1) * req.query.limit;
+		console.log("the offset", offset, "the limit is ", req.query.limit);
+
+		const result = await conn.cash_accounts.findAll({
+		    where: { type: "cash" },
+		    order: [['id', 'DESC']],
+		    offset: offset,
+		    limit: parseInt(req.query.limit),
+		    subQuery: false,
+		});
+
+		const count = await conn.cash_accounts.count({
+		    where: { type: 'cash' }
+		});
+
+		const updatedResult = await Promise.all(result.map(async r => {
+		    let totalDebit = 0;
+		    let totalCredit = 0;
+
+		    const transaction_details = await conn.transaction_details.findAll({
+		        where: {
+		            account_id: r.level_three_chart_of_account_id
+		        }
+		    });
+
+		    transaction_details.forEach(detail => {
+		        if (detail.type === 'debit') {
+		            totalDebit += Number(detail.value);
+		        } else if (detail.type === 'credit') {
+		            totalCredit += Number(detail.value);
+		        }
+		    });
+
+		    const balance = totalDebit - totalCredit;
+
+		    return {
+		        ...r.toJSON(),
+		        balance
+		    };
+		}));
+
+		res.status(200).json({ status: true, data: updatedResult, tot: count });
+
 	}
 	catch(error)
 	{
@@ -96,26 +120,49 @@ exports.paginationCashAccounts = async (req, res) => {
 exports.paginationBankAccounts = async (req, res) => {
 	try
 	{
-		console.log('query', req.query)
-        var offset = (req.query.page - 1) * req.query.limit
-        console.log("the offset", offset, "the limit is ", req.query.limit);
-        const result = await conn.cash_accounts.findAll({
-        						where: {
-							  	type: 'bank'
-							  },
-                              order: [['id', 'DESC']],
-							  offset: offset,
-							  limit: parseInt(req.query.limit),
-							  subQuery: false,
-							  
-                            });
+		console.log('query', req.query);
+		const offset = (req.query.page - 1) * req.query.limit;
+		console.log("the offset", offset, "the limit is ", req.query.limit);
 
-        var count = await conn.cash_accounts.count({
-        	where: {
-        		type: 'bank',
-        	}
-        });
-        res.status(200).json({ status: true, data: result, tot: count })
+		const result = await conn.cash_accounts.findAll({
+		    where: { type: "bank" },
+		    order: [['id', 'DESC']],
+		    offset: offset,
+		    limit: parseInt(req.query.limit),
+		    subQuery: false,
+		});
+
+		const count = await conn.cash_accounts.count({
+		    where: { type: 'bank' }
+		});
+
+		const updatedResult = await Promise.all(result.map(async r => {
+		    let totalDebit = 0;
+		    let totalCredit = 0;
+
+		    const transaction_details = await conn.transaction_details.findAll({
+		        where: {
+		            account_id: r.level_three_chart_of_account_id
+		        }
+		    });
+
+		    transaction_details.forEach(detail => {
+		        if (detail.type === 'debit') {
+		            totalDebit += Number(detail.value);
+		        } else if (detail.type === 'credit') {
+		            totalCredit += Number(detail.value);
+		        }
+		    });
+
+		    const balance = totalDebit - totalCredit;
+
+		    return {
+		        ...r.toJSON(),
+		        balance
+		    };
+		}));
+
+		res.status(200).json({ status: true, data: updatedResult, tot: count });
 	}
 	catch(error)
 	{
