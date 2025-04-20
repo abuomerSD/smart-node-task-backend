@@ -1,45 +1,35 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('sale_order', {
+  return sequelize.define('cash_accounts', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    user_id: {
+    level_three_chart_of_account_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'users',
+        model: 'level_three_chart_of_accounts',
         key: 'id'
       }
     },
-    customer_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'customers',
-        key: 'id'
-      }
-    },
-    recipet_img: {
+    type: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    recipet_number: {
+    name: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    total_amount: {
-      type: DataTypes.DECIMAL(10,2),
-      allowNull: true,
-      defaultValue: 0.00
+    name_en: {
+      type: DataTypes.STRING(255),
+      allowNull: true
     },
-    paid_amount: {
-      type: DataTypes.DECIMAL(10,2),
-      allowNull: true,
-      defaultValue: 0.00
+    account_number: {
+      type: DataTypes.STRING(255),
+      allowNull: true
     },
     created: {
       type: DataTypes.DATE,
@@ -53,7 +43,7 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     sequelize,
-    tableName: 'sale_order',
+    tableName: 'cash_accounts',
     timestamps: false,
     indexes: [
       {
@@ -65,17 +55,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "user_id",
+        name: "level_three_chart_of_accounts_copy_1_ibfkffsgh_1",
         using: "BTREE",
         fields: [
-          { name: "user_id" },
-        ]
-      },
-      {
-        name: "customer_id",
-        using: "BTREE",
-        fields: [
-          { name: "customer_id" },
+          { name: "level_three_chart_of_account_id" },
         ]
       },
     ]

@@ -24,6 +24,7 @@ const salesCreditNotes = require('./routes/SalesCreditNotes.js');
 const productLogs = require('./routes/ProductLogs.js');
 const transactions = require('./routes/Transactions.js');
 const customers = require('./routes/Customers.js')
+const cashAccounts = require('./routes/CashAccounts.js')
 
 const { logger } = require("./middleware/logger.js");
 
@@ -68,6 +69,7 @@ app.use('/api/sales-credit-notes', salesCreditNotes);
 app.use('/api/product-logs', productLogs);
 app.use('/api/transactions', transactions);
 app.use('/api/customers', customers)
+app.use('/api/cash-accounts', cashAccounts)
 
 
 // charts APIs

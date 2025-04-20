@@ -1,5 +1,6 @@
 var DataTypes = require("sequelize").DataTypes;
 var _accounting_peroids = require("./accounting_peroids");
+var _cash_accounts = require("./cash_accounts");
 var _categories = require("./categories");
 var _customer_categories = require("./customer_categories");
 var _customers = require("./customers");
@@ -26,6 +27,7 @@ var _users = require("./users");
 
 function initModels(sequelize) {
   var accounting_peroids = _accounting_peroids(sequelize, DataTypes);
+  var cash_accounts = _cash_accounts(sequelize, DataTypes);
   var categories = _categories(sequelize, DataTypes);
   var customer_categories = _customer_categories(sequelize, DataTypes);
   var customers = _customers(sequelize, DataTypes);
@@ -62,6 +64,8 @@ function initModels(sequelize) {
   customers.hasMany(sale_order, { as: "sale_orders", foreignKey: "customer_id"});
   level_two_chart_of_accounts.belongsTo(level_one_chart_of_accounts, { as: "level_one_chart_of_account", foreignKey: "level_one_chart_of_account_id"});
   level_one_chart_of_accounts.hasMany(level_two_chart_of_accounts, { as: "level_two_chart_of_accounts", foreignKey: "level_one_chart_of_account_id"});
+  cash_accounts.belongsTo(level_three_chart_of_accounts, { as: "level_three_chart_of_account", foreignKey: "level_three_chart_of_account_id"});
+  level_three_chart_of_accounts.hasMany(cash_accounts, { as: "cash_accounts", foreignKey: "level_three_chart_of_account_id"});
   subledger_account_subaccounts.belongsTo(level_three_chart_of_accounts, { as: "level_three_chart_of_account", foreignKey: "level_three_chart_of_account_id"});
   level_three_chart_of_accounts.hasMany(subledger_account_subaccounts, { as: "subledger_account_subaccounts", foreignKey: "level_three_chart_of_account_id"});
   transaction_details.belongsTo(level_three_chart_of_accounts, { as: "account", foreignKey: "account_id"});
@@ -101,6 +105,7 @@ function initModels(sequelize) {
 
   return {
     accounting_peroids,
+    cash_accounts,
     categories,
     customer_categories,
     customers,
