@@ -39,13 +39,13 @@ exports.paginateCustomers = async(req, res) => {
         console.log("the offset", offset, "the limit is ", req.query.limit);
         const result = await conn.customers.findAll({
                               order: [['id', 'DESC']],
-							  include: [
-							    {
-							      model: conn.customer_categories,
-							      as: 'customer_categories',
-							      attributes: ['name']
-							    }
-							  ],
+							  // include: [
+							  //   {
+							  //     model: conn.customer_categories,
+							  //     as: 'customer_categories',
+							  //     attributes: ['name']
+							  //   }
+							  // ],
 							  offset: offset,
 							  limit: parseInt(req.query.limit),
 							  subQuery: false
