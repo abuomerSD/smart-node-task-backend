@@ -37,9 +37,16 @@ exports.createCashAccount = async(req, res) => {
 						ORDER BY l3.code DESC LIMIT 1
 		`);
 
-		console.log('lastLvl3AccountAdded', lastLvl3AccountAdded[0][0])
+		// console.log('lastLvl3AccountAdded', lastLvl3AccountAdded[0][0])
+		// console.log('lvlTwoCode', lvlTwoCode)
 
-		const lastCode = parseInt(lastLvl3AccountAdded[0][0].code);
+		let lastCode = 0;
+		if(lastLvl3AccountAdded[0][0].code){
+			lastCode = parseInt(lastLvl3AccountAdded[0][0].code);
+		} else {
+			lastCode = lvlTwoCode;
+		}
+
 
 		newCode = lastCode + 1;
 		account.code = newCode;
