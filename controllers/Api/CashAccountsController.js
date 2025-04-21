@@ -222,7 +222,7 @@ exports.deleteCashAccount = async (req, res) => {
 			}
 		})
 
-		const lvl3_account_delete = await conn.cash_accounts.destroy({
+		const lvl3_account_delete = await conn.level_three_chart_of_accounts.destroy({
 			where: {
 				id
 			}
@@ -236,3 +236,25 @@ exports.deleteCashAccount = async (req, res) => {
 	}
 }
 
+exports.search = async (req, res) => {
+	try
+	{
+		var searchCol = req.body.col
+	    var offset = (req.body.page - 1) * req.body.limit
+	    var search = req.body.search
+	    const accounts = await conn.cash_accounts.findAll({
+	        where: {
+	        	[Op.or]: [
+	        		{ name: { [Op.like]: '%' + search + '%' } },
+	        		{ name_en : {  [Op.like]: '%' + search + '%'} }
+	        	]
+	        }
+	    });
+	    res.status(200).json({ status: true, data: accounts })
+	}
+	catch(error)
+	{
+		console.log(error);
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })    
+	}
+}
