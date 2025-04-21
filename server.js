@@ -11,6 +11,7 @@ const convertQueryStringsToItType = require('./middleware/convertQueryStringsToI
 const cors = require("cors");
 const fileEasyUpload = require("express-easy-fileuploader");
 const file_upload = require("./middleware/media_middleware");
+const account_period = require('./middleware/accountPeriod');
 
 
 
@@ -25,6 +26,7 @@ const productLogs = require('./routes/ProductLogs.js');
 const transactions = require('./routes/Transactions.js');
 const customers = require('./routes/Customers.js')
 const cashAccounts = require('./routes/CashAccounts.js')
+const subledger = require('./routes/Subledger.js')
 
 const { logger } = require("./middleware/logger.js");
 
@@ -58,6 +60,7 @@ app.use(express.static(__dirname + "/public/"));
 // app.use(express.static(path.join(__dirname, "uploads")));
 // app.use(file_upload);
 app.use(convertQueryStringsToItType);
+app.use(account_period);
 
 
 app.use("/api/user-roles", user_roles);
@@ -70,6 +73,7 @@ app.use('/api/product-logs', productLogs);
 app.use('/api/transactions', transactions);
 app.use('/api/customers', customers)
 app.use('/api/cash-accounts', cashAccounts)
+app.use('/api/subledger', subledger)
 
 
 // charts APIs

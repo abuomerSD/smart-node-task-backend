@@ -1,6 +1,8 @@
 
 const { conn, sequelize } = require('../../db/conn')
 const { Sequelize, Op, Model, DataTypes } = require("sequelize");
+const payToCustomer = require('../../utils/payToCustomer.js');
+
 
 // exports.getLevelThreeAccounts = async(req, res) => {
 //     try {
@@ -81,6 +83,10 @@ exports.createTransaction = async (req, res) => {
             await conn.transaction_documents.bulkCreate(transaction_documents);
             transaction.transaction_documents = transaction_documents;
         } 
+
+        // if(req.body.payToCustomer) {
+        //     payToCustomer.utils.sell_to_customer()
+        // }
 
         res.status(200).json({status: true, data: transaction});
 

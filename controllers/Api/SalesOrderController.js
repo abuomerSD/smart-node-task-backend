@@ -113,6 +113,7 @@ exports.createSalesOrder = async (req, res, next) =>
 {
     try
     {
+        console.log('order_details: ', JSON.parse(req.body.order_details))
         let file_path = '';
         if (req.file)
         {
