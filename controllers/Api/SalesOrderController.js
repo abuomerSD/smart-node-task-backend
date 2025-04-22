@@ -157,9 +157,45 @@ exports.pagination = async (req, res, next) =>
         //     subQuery: false,
         // })
 
+        // var result = await sequelize.query(`
+        //     SELECT *, (SELECT JSON_ARRAYAGG(JSON_Object('id', id, 'sale_order_id', sale_order_id, 'qty', sale_order_details.qty - (SELECT COALESCE(SUM(sale_credit_note_details.qty), 0) FROM sale_credit_note_details WHERE sale_credit_note_details.sale_order_detail_id = sale_order_details.id) , 'product_id', product_id, 'price', price , 'product', (SELECT json_object('name', name, 'img', img) FROM products WHERE products.id = product_id))) FROM sale_order_details WHERE sale_order_id = sale_order.id) AS sale_order_details FROM sale_order limit ${req.query.limit} OFFSET ${offset}
+        //     `)
+
         var result = await sequelize.query(`
-            SELECT *, (SELECT JSON_ARRAYAGG(JSON_Object('id', id, 'sale_order_id', sale_order_id, 'qty', sale_order_details.qty - (SELECT COALESCE(SUM(sale_credit_note_details.qty), 0) FROM sale_credit_note_details WHERE sale_credit_note_details.sale_order_detail_id = sale_order_details.id) , 'product_id', product_id, 'price', price , 'product', (SELECT json_object('name', name, 'img', img) FROM products WHERE products.id = product_id))) FROM sale_order_details WHERE sale_order_id = sale_order.id) AS sale_order_details FROM sale_order limit ${req.query.limit} OFFSET ${offset}
+            SELECT *, (SELECT JSON_ARRAYAGG(JSON_Object('id', id, 'sale_order_id', sale_order_id, 'qty', sale_order_details.qty - (SELECT COALESCE(SUM(sale_credit_note_details.qty), 0) FROM sale_credit_note_details WHERE sale_credit_note_details.sale_order_detail_id = sale_order_details.id) , 'product_id', product_id, 'price', price , 'product', (SELECT json_object('name', name, 'img', img) FROM products WHERE products.id = product_id))) FROM sale_order_details WHERE sale_order_id = sale_order.id) AS sale_order_details FROM sale_order ORDER BY sale_order.id DESC limit 10 OFFSET 0 
             `)
+
+        // var result = await sequelize.query(`
+        //     SELECT *, (
+        //       SELECT JSON_ARRAYAGG(
+        //         JSON_OBJECT(
+        //           'id', id,
+        //           'sale_order_id', sale_order_id,
+        //           'qty', sale_order_details.qty - (
+        //             SELECT COALESCE(SUM(sale_credit_note_details.qty), 0)
+        //             FROM sale_credit_note_details
+        //             WHERE sale_credit_note_details.sale_order_detail_id = sale_order_details.id
+        //           ),
+        //           'product_id', product_id,
+        //           'price', price,
+        //           'product', (
+        //             SELECT JSON_OBJECT('name', name, 'img', img)
+        //             FROM products
+        //             WHERE products.id = product_id
+        //           )
+        //         )
+        //       )
+        //       FROM (
+        //         SELECT *
+        //         FROM sale_order_details
+        //         WHERE sale_order_id = sale_order.id
+        //         ORDER BY id DESC
+        //       ) AS sale_order_details
+        //     ) AS sale_order_details
+        //     FROM sale_order
+        //     LIMIT ${req.query.limit} OFFSET ${offset}
+
+        //     `)
 
         var count = await conn.sale_order.count();
         res.status(200).json({ status: true, data: result[0], tot: count })
