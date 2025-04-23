@@ -108,6 +108,15 @@ exports.updateCustomer = async (req, res) => {
 exports.deleteCustomer = async(req, res) => {
 	try
     {
+    	const isExist = await conn.subledger_transactions.findAll({
+    		where: {
+    			record_id: req.params.id,
+    		}
+    	})
+    	if(isExist.length > 0) {
+    		res.status(200).json({ status: false, msg: `You can't delete a customer has trancations` })
+    		return
+    	}
         const isDeleted = await conn.customers.destroy({ where: { id: req.params.id } })
         if (isDeleted)
             res.status(200).json({ status: true, msg: `data deleted successfully` })
@@ -151,15 +160,24 @@ exports.getCutomerTransations = async (req, res) => {
 		const id = req.params.id;
 	    
 	    const data = await conn.subledger_transactions.findAll({
+					  where: {
+					    record_id: id,
+					  },
+					  // order: [
+					  //   [literal(`CASE WHEN type = 'debit' THEN 0 ELSE 1 END`), 'ASC']
+					  // ],
+					  order: [['id', 'DESC']],
+					  include: [
+						  {
+						    model: conn.subledger_account_subaccounts,
+						    as: 'subledger_subaccount', 
+						    attributes: ['name_en']
+						  }
+						]
+		});
 
-	        where: {
-	           record_id: id,
-	           
-	        },
-	        order: [
-    			[literal(`CASE WHEN type = 'debit' THEN 0 ELSE 1 END`), 'ASC']
-  			],
-	    });
+		console.log('--------------------------')
+		console.log('data', data)
 
 	    let totalDebit = 0;
 	    let totalCredit = 0;

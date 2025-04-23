@@ -1,5 +1,7 @@
+const { conn, sequelize } = require('../db/conn');
+const { Sequelize, Op, Model, DataTypes } = require("sequelize");
 let utils = {}
-utils.sell_to_customer = (customer, accountReceivable,customersUnearned, accounting_transaction, transaction,accounting_period_id, products_fees, sale_order) => {
+utils.sell_to_customer = (customer, accountReceivable,customersUnearned, accounting_transaction, transaction,accounting_period_id, products_fees, sale_order, amount) => {
 	return new Promise(async resolve => {
   
 	  let old_invoices = [], old_prepayments

@@ -1,7 +1,7 @@
 
 const { conn, sequelize } = require('../../db/conn')
 const { Sequelize, Op, Model, DataTypes } = require("sequelize");
-const payToCustomer = require('../../utils/payToCustomer.js');
+const payToCustomer = require('../../utils/sellToCustomer.js');
 
 
 // exports.getLevelThreeAccounts = async(req, res) => {

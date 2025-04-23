@@ -3,7 +3,7 @@ const { conn, sequelize } = require('../../db/conn');
 const { Sequelize, Op, Model, DataTypes } = require("sequelize");
 const { response } = require('../../server');
 
-const { utils } = require('../../utils/payToCustomer');
+const  utils  = require('../../utils/sellToCustomer');
 
 exports.selectSalesOrderByFilter = async (req, res, next) =>
 {
@@ -115,6 +115,11 @@ exports.createSalesOrder = async (req, res, next) =>
 {
     try
     {
+        console.log('----------------------------------')
+        console.log('request body: ', req.body)
+        const cartTotal = req.body.cartTotal;
+        const paymentValue = req.body.paymentValue;
+
         console.log('order_details: ', JSON.parse(req.body.order_details))
         let file_path = '';
         if (req.file)
@@ -123,18 +128,126 @@ exports.createSalesOrder = async (req, res, next) =>
             req.body.recipet_img = file_path.split('uploads/')[1]
         }
 
-        const result = await conn.sale_order.create(req.body);
+        const saleOrder = await conn.sale_order.create(req.body);
         const order_details = JSON.parse(req.body.order_details);
         console.log("body", req.body);
 
         order_details.forEach(element =>
         {
-            element.sale_order_id = result.id;
+            element.sale_order_id = saleOrder.id;
         });
 
         await conn.sale_order_details.bulkCreate(order_details);
-        result["order_details"] = order_details;
-        res.status(200).json({ status: true, data: result });
+        saleOrder["order_details"] = order_details;
+
+        console.log('----------------------------------')
+        console.log('sale order created')
+
+        const accountReceivableSubAccount = await conn.subledger_account_subaccounts.findOne({
+            where: {
+                id: 1
+            }
+        });
+
+        const SalesRevenueSubAccount = await conn.subledger_account_subaccounts.findOne({
+            where: {
+                id: 23
+            }
+        });
+
+        const customerUnearned = await conn.subledger_account_subaccounts.findOne({
+            where: {
+                id: 23
+            }
+        });
+
+        // Transactions
+
+        const period_id = req.body.accounting_period_id;
+
+        const transaction = await sequelize.transaction()
+
+        const descr = `فاتورة مبيعات رقم ${saleOrder.id}`
+        const descr_en = `Sales invoice No ${saleOrder.id}`
+
+        const records = [];
+        records.push({
+            account_id: accountReceivableSubAccount.level_three_chart_of_account_id, type: 'debit', value: paymentValue, descr,
+            descr_en,
+        });
+        records.push({
+            account_id: SalesRevenueSubAccount.level_three_chart_of_account_id, type: 'credit', value: paymentValue, descr,
+            descr_en,
+        });            
+
+        let transactionObj = {
+                descr,
+                descr_en,
+                documents: JSON.stringify([]),
+                records,
+                accounting_period_id: period_id,
+            } 
+
+        const accounting_transaction = await conn.transactions.create(transactionObj);
+        const transaction_details = transactionObj.records;
+
+        transaction_details.forEach(detail => {
+            detail.transaction_id = accounting_transaction.id;
+        });
+
+        await conn.transaction_details.bulkCreate(transaction_details);
+
+        console.log('----------------------------------')
+        console.log('transaction created')
+
+
+        // subledger transaction
+
+        let account_receivable_subleger_transaction = {
+            transaction_id: accounting_transaction.id,
+            subledger_subaccounts_id: accountReceivableSubAccount.id,
+            type: 'debit',
+            value: cartTotal,
+            descr,
+            descr_en
+            }
+        let sales_revenue_subledger_transactions = {
+            transaction_id: accounting_transaction.id,
+            subledger_subaccounts_id: SalesRevenueSubAccount.id,
+            type: 'credit',
+            value: paymentValue,
+            descr,
+            descr_en,
+        }
+
+        let customer = req.body.customer;
+        if (customer)
+        {
+
+            account_receivable_subleger_transaction.record_id = customer.id
+            sales_revenue_subledger_transactions.record_id = customer.id
+            await conn.subledger_transactions.create(account_receivable_subleger_transaction)
+            await conn.subledger_transactions.create(sales_revenue_subledger_transactions)
+        } else
+        {
+            account_receivable_subleger_transaction.record_id = null
+            sales_revenue_subledger_transactions.record_id = null
+            customer = null
+        }
+
+        
+
+        console.log('----------------------------------')
+        console.log('subledger_transactions created')
+    
+
+        await utils.sell_to_customer(customer, accountReceivableSubAccount, customerUnearned, accounting_transaction, transaction, period_id,
+            cartTotal, saleOrder, paymentValue);
+
+        console.log('----------------------------------')
+        console.log('sell_to_customer created')
+
+        res.status(200).json({ status: true, data: saleOrder });
     }
     catch (e)
     {
