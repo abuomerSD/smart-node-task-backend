@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "dev": "NODE_ENV=production node server",
-    "start": "nodemon server.js",
+    "dev1": "NODE_ENV=production node server",
+    "dev": "nodemon server.js",
     "sequelize": "sequelize-auto -h localhost -d pos_demo -u root -x -p 3306 -o models"
   },
   "author": "",
