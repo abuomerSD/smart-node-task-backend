@@ -220,7 +220,7 @@ exports.createSalesOrder = async (req, res, next) =>
             descr_en,
         }
 
-        let customer = req.body.customer;
+        let customer = JSON.parse(req.body.customer);
         if (customer)
         {
 

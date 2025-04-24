@@ -158,8 +158,11 @@ exports.getCutomerTransations = async (req, res) => {
 	try
 	{
 		const id = req.params.id;
+		var offset = (req.query.page - 1) * req.query.limit
 	    
 	    const data = await conn.subledger_transactions.findAll({
+	    			  limit: req.query.limit,
+        			  offset: offset,
 					  where: {
 					    record_id: id,
 					  },
@@ -175,6 +178,12 @@ exports.getCutomerTransations = async (req, res) => {
 						  }
 						]
 		});
+
+		const count = await conn.subledger_transactions.count({
+			where: {
+				record_id: id,
+			}
+		})
 
 		console.log('--------------------------')
 		console.log('data', data)
@@ -194,11 +203,11 @@ exports.getCutomerTransations = async (req, res) => {
 	    })
 
 	    balance = totalDebit - totalCredit;
-	    res.status(200).json({status: true, data, balance});
+	    res.status(200).json({status: true, data, balance, tot: count});
 	}	
 	catch(error) {
 		console.log(error);
-        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` })    
+        res.status(200).json({ status: false, msg: `مشكلة أثناء معالجة البيانات الرجاء المحاول مرة أخرى` , error: error.message })    
 	}
 }
 
